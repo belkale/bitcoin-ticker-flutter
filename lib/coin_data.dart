@@ -1,3 +1,10 @@
+class CryptoPrice {
+  String currency;
+  String crypto;
+  String price;
+  CryptoPrice({this.currency, this.crypto, this.price});
+}
+
 const List<String> currenciesList = [
   'AUD',
   'BRL',

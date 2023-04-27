@@ -2,6 +2,7 @@ import 'package:bitcoin_ticker/services/coinapi.dart';
 import 'package:flutter/material.dart';
 
 import 'coin_data.dart';
+import 'components/price-card.dart';
 
 class PriceScreen extends StatefulWidget {
   @override
@@ -10,7 +11,11 @@ class PriceScreen extends StatefulWidget {
 
 class _PriceScreenState extends State<PriceScreen> {
   String selectedCurrency = 'USD';
-  String btcPrice = '?';
+  List<CryptoPrice> priceList = cryptoList
+      .map<CryptoPrice>((String ticker) =>
+          CryptoPrice(crypto: ticker, currency: 'USD', price: '??'))
+      .toList();
+  List<Widget> priceWidgets = [];
 
   @override
   void initState() {
@@ -20,10 +25,26 @@ class _PriceScreenState extends State<PriceScreen> {
 
   void updateUI() async {
     CoinAPI api = CoinAPI();
-    double price = await api.getPrice('BTC', selectedCurrency);
+    for (CryptoPrice cp in priceList) {
+      double price = await api.getPrice(cp.crypto, selectedCurrency);
+      cp.currency = selectedCurrency;
+      cp.price = price.toStringAsFixed(2);
+    }
     setState(() {
-      btcPrice = price.toStringAsFixed(2);
+      priceWidgets = getPriceWidgets();
     });
+  }
+
+  List<Widget> getPriceWidgets() {
+    List<Widget> children = [];
+
+    for (CryptoPrice cp in priceList) {
+      children.add(PriceCard(
+          crypto: cp.crypto,
+          cryptoPrice: cp.price,
+          selectedCurrency: cp.currency));
+    }
+    return children;
   }
 
   @override
@@ -35,26 +56,12 @@ class _PriceScreenState extends State<PriceScreen> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
+        children: [
           Padding(
             padding: EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 0),
-            child: Card(
-              color: Colors.lightBlueAccent,
-              elevation: 5.0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
-                child: Text(
-                  '1 BTC = $btcPrice $selectedCurrency',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: priceWidgets,
             ),
           ),
           Container(
