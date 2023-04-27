@@ -20,7 +20,7 @@ class _PriceScreenState extends State<PriceScreen> {
 
   void updateUI() async {
     CoinAPI api = CoinAPI();
-    double price = await api.getPrice('BTC', 'USD');
+    double price = await api.getPrice('BTC', selectedCurrency);
     setState(() {
       btcPrice = price.toStringAsFixed(2);
     });
@@ -47,7 +47,7 @@ class _PriceScreenState extends State<PriceScreen> {
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
                 child: Text(
-                  '1 BTC = $btcPrice USD',
+                  '1 BTC = $btcPrice $selectedCurrency',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 20.0,
@@ -65,9 +65,8 @@ class _PriceScreenState extends State<PriceScreen> {
             child: DropdownButton<String>(
               value: selectedCurrency,
               onChanged: (value) {
-                setState(() {
-                  this.selectedCurrency = value;
-                });
+                selectedCurrency = value;
+                updateUI();
               },
               items: currenciesList
                   .map<DropdownMenuItem<String>>(
